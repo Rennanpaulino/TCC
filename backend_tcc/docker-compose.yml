@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # --- NOVO SERVIÇO: BANCO DE DADOS ---
+  # --- BANCO DE DADOS COM HEALTHCHECK ---
   db:
     image: postgres:15-alpine
     container_name: tcc_postgres
@@ -14,17 +14,25 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
+    # O Healthcheck verifica a cada 5s se o banco responde
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tcc_user -d tcc_database"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # --- SERVIÇOS PYTHON (AGORA DEPENDEM DO DB) ---
+  # --- SERVIÇOS PYTHON (AGORA ESPERAM O BANCO) ---
   auth_service:
     build: ./auth_service
     container_name: tcc_auth
     ports:
       - "8001:8001"
     depends_on:
-      - db
+      db:
+        condition: service_healthy  # <--- SÓ INICIA QUANDO O BANCO ESTIVER PRONTO
     environment:
       - DATABASE_URL=postgresql://tcc_user:tcc_password@db/tcc_database
+    restart: always
 
   iot_service:
     build: ./iot_service
@@ -32,9 +40,11 @@ services:
     ports:
       - "8002:8002"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgresql://tcc_user:tcc_password@db/tcc_database
+    restart: always
 
   report_service:
     build: ./report_service
@@ -42,9 +52,11 @@ services:
     ports:
       - "8003:8003"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgresql://tcc_user:tcc_password@db/tcc_database
+    restart: always
 
 volumes:
   postgres_data:
