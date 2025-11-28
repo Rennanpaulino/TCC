@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # --- NOVO SERVIÇO: BANCO DE DADOS ---
+  db:
+    image: postgres:15-alpine
+    container_name: tcc_postgres
+    environment:
+      - POSTGRES_USER=tcc_user
+      - POSTGRES_PASSWORD=tcc_password
+      - POSTGRES_DB=tcc_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  # --- SERVIÇOS PYTHON (AGORA DEPENDEM DO DB) ---
+  auth_service:
+    build: ./auth_service
+    container_name: tcc_auth
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://tcc_user:tcc_password@db/tcc_database
+
+  iot_service:
+    build: ./iot_service
+    container_name: tcc_iot
+    ports:
+      - "8002:8002"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://tcc_user:tcc_password@db/tcc_database
+
+  report_service:
+    build: ./report_service
+    container_name: tcc_reports
+    ports:
+      - "8003:8003"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://tcc_user:tcc_password@db/tcc_database
+
+volumes:
+  postgres_data:
