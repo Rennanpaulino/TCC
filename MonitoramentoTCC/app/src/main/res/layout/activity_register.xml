@@ -1,10 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RegisterActivity">
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Novo Cadastro"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"/>
+
+    <EditText
+        android:id="@+id/edtRegUsuario"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Escolha um Usuário" />
+
+    <EditText
+        android:id="@+id/edtRegSenha"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Escolha uma Senha"
+        android:inputType="textPassword"
+        android:layout_marginTop="16dp"/>
+
+    <Button
+        android:id="@+id/btnCadastrar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Criar Conta"
+        android:backgroundTint="#4CAF50"
+        android:layout_marginTop="24dp"/>
+
+    <Button
+        android:id="@+id/btnVoltarLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancelar"
+        android:textColor="#555"
+        android:backgroundTint="#EEE"
+        android:layout_marginTop="8dp"/>
+
+</LinearLayout>

@@ -17,7 +17,6 @@ public class TremAdapter extends RecyclerView.Adapter<TremAdapter.TremViewHolder
     private List<Trem> listaTrens = new ArrayList<>();
     private OnItemClickListener listener;
 
-    // Interface para lidar com cliques (callback para a MainActivity)
     public interface OnItemClickListener {
         void onItemClick(Trem trem);
     }
@@ -26,9 +25,9 @@ public class TremAdapter extends RecyclerView.Adapter<TremAdapter.TremViewHolder
         this.listener = listener;
     }
 
-    public void atualizarDados(List<Trem> novosTrens) {
+    public void atualizarLista(List<Trem> novosTrens) {
         this.listaTrens = novosTrens;
-        notifyDataSetChanged(); // Avisa a tela que mudou tudo
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -42,10 +41,11 @@ public class TremAdapter extends RecyclerView.Adapter<TremAdapter.TremViewHolder
     public void onBindViewHolder(@NonNull TremViewHolder holder, int position) {
         Trem trem = listaTrens.get(position);
 
+        // 1. Dados Básicos
         holder.txtId.setText(trem.getId());
-        holder.txtLotacao.setText("Lotação Estimada: " + trem.getLotacao());
+        holder.txtLotacao.setText("Lotação: " + trem.getLotacao() + " pessoas");
 
-        // LÓGICA DAS CORES (Igual faríamos no mapa)
+        // 2. Cores da Lotação
         if (trem.getLotacao() < 10) {
             holder.viewStatus.setBackgroundColor(Color.parseColor("#4CAF50")); // Verde
         } else if (trem.getLotacao() < 30) {
@@ -54,7 +54,21 @@ public class TremAdapter extends RecyclerView.Adapter<TremAdapter.TremViewHolder
             holder.viewStatus.setBackgroundColor(Color.parseColor("#F44336")); // Vermelho
         }
 
-        // Configura o clique
+        // 3. NOVO: Exibir ETA (Tempo de Chegada)
+        // O Backend manda em minutos e segundos
+        String textoEta = String.format("Chegada: %02d min", trem.getEtaMinutos());
+        holder.txtEta.setText(textoEta);
+
+        // 4. NOVO: Aviso de GPS Estimado
+        if (trem.isEstimado()) {
+            holder.txtAviso.setVisibility(View.VISIBLE);
+            holder.txtEta.setTextColor(Color.GRAY); // Deixa o ETA cinza para indicar incerteza
+        } else {
+            holder.txtAviso.setVisibility(View.GONE);
+            holder.txtEta.setTextColor(Color.parseColor("#0055FF")); // Azul normal
+        }
+
+        // Clique para abrir detalhes
         holder.itemView.setOnClickListener(v -> listener.onItemClick(trem));
     }
 
@@ -63,9 +77,8 @@ public class TremAdapter extends RecyclerView.Adapter<TremAdapter.TremViewHolder
         return listaTrens.size();
     }
 
-    // Classe interna que segura os elementos visuais
     static class TremViewHolder extends RecyclerView.ViewHolder {
-        TextView txtId, txtLotacao;
+        TextView txtId, txtLotacao, txtEta, txtAviso;
         View viewStatus;
 
         public TremViewHolder(@NonNull View itemView) {
@@ -73,6 +86,10 @@ public class TremAdapter extends RecyclerView.Adapter<TremAdapter.TremViewHolder
             txtId = itemView.findViewById(R.id.txtIdTrem);
             txtLotacao = itemView.findViewById(R.id.txtLotacao);
             viewStatus = itemView.findViewById(R.id.viewStatus);
+
+            // Novos campos mapeados
+            txtEta = itemView.findViewById(R.id.txtEtaLista);
+            txtAviso = itemView.findViewById(R.id.txtAvisoLista);
         }
     }
 }

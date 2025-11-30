@@ -1,52 +1,67 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
-from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Session
+from passlib.context import CryptContext
+from jose import jwt
+from datetime import datetime, timedelta
 from database import Base, engine, get_db
+from sqlalchemy import Column, Integer, String
 
-# 1. Cria as tabelas no Banco (Modelo)
+# --- CONFIGURAÇÕES ---
+SECRET_KEY = "segredo_do_tcc" # Em produção use env var
+ALGORITHM = "HS256"
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# --- MODELO DB ---
 class UserModel(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    password = Column(String)
+    password_hash = Column(String)
+    role = Column(String, default="user") # user ou admin
 
-# Cria a tabela se não existir
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Auth Service")
 
-# Modelo para validar dados que vêm da requisição (Pydantic)
-class UserSchema(BaseModel):
+# --- SCHEMAS ---
+class UserLogin(BaseModel):
     username: str
     password: str
 
-# --- ROTAS ---
+# --- UTILITÁRIOS ---
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def create_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=60) # Token dura 1h
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+# --- ROTAS ---
 @app.post("/register")
-def register(user: UserSchema, db: Session = Depends(get_db)):
-    # Verifica se já existe no banco
-    db_user = db.query(UserModel).filter(UserModel.username == user.username).first()
-    if db_user:
+def register(user: UserLogin, db: Session = Depends(get_db)):
+    if db.query(UserModel).filter(UserModel.username == user.username).first():
         raise HTTPException(status_code=400, detail="Usuário já existe")
     
-    # Cria novo usuário
-    new_user = UserModel(username=user.username, password=user.password)
+    new_user = UserModel(
+        username=user.username,
+        password_hash=get_password_hash(user.password)
+    )
     db.add(new_user)
     db.commit()
-    db.refresh(new_user)
-    
-    return {"msg": "Usuário criado com sucesso", "id": new_user.id}
+    return {"msg": "Criado com sucesso"}
 
 @app.post("/login")
-def login(user: UserSchema, db: Session = Depends(get_db)):
-    # Busca no banco
+def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(UserModel).filter(UserModel.username == user.username).first()
     
-    if not db_user or db_user.password != user.password:
+    if not db_user or not verify_password(user.password, db_user.password_hash):
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
     
-    return {
-        "access_token": f"token-real-do-{db_user.username}",
-        "token_type": "bearer"
-    }
+    token = create_token({"sub": db_user.username, "role": db_user.role})
+    return {"access_token": token, "token_type": "bearer"}
