@@ -4,17 +4,9 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.seutcc.app.models.Trem;
 import com.seutcc.app.network.RetrofitClient;
 import java.util.List;
@@ -22,15 +14,19 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class DetalhesTremActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class DetalhesTremActivity extends AppCompatActivity {
 
-    private GoogleMap mMap;
     private String tremId;
-    private TextView txtEta, txtAviso;
+    private TextView txtTitulo, txtEta, txtVelocidade, txtStatusGps;
+    private ProgressBar progressBar;
     private Handler handler = new Handler();
 
-    // Coordenada Fixa de Santo Amaro (TCC)
-    private final LatLng DESTINO = new LatLng(-23.65637, -46.70956);
+    // Coordenadas Fixas de Santo Amaro (Destino)
+    private final double LAT_DESTINO = -23.65637;
+    private final double LON_DESTINO = -46.70956;
+
+    // Distância total da linha fictícia para calcular a barra de progresso (Ex: 10km)
+    private final float DISTANCIA_TOTAL_LINHA_METROS = 10000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,38 +35,30 @@ public class DetalhesTremActivity extends AppCompatActivity implements OnMapRead
 
         tremId = getIntent().getStringExtra("ID_TREM");
 
-        TextView txtTitulo = findViewById(R.id.txtTituloTrem);
-        txtTitulo.setText("Monitorando: " + tremId);
+        txtTitulo = findViewById(R.id.txtTituloTrem);
+        txtEta = findViewById(R.id.txtEtaGrande);
+        txtVelocidade = findViewById(R.id.txtVelocidade);
+        txtStatusGps = findViewById(R.id.txtStatusGps);
+        progressBar = findViewById(R.id.progressBarTrajeto);
 
-        txtEta = findViewById(R.id.txtEta);
-        txtAviso = findViewById(R.id.txtAvisoGps);
+        txtTitulo.setText(tremId);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        iniciarLoop();
     }
 
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-        // Adiciona Marcador FIXO da Estação
-        mMap.addMarker(new MarkerOptions()
-                .position(DESTINO)
-                .title("Estação Santo Amaro")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-
-        atualizarPosicao();
+    private void iniciarLoop() {
+        atualizarDados();
+        handler.postDelayed(this::iniciarLoop, 3000); // Roda a cada 3s
     }
 
-    private void atualizarPosicao() {
+    private void atualizarDados() {
         RetrofitClient.getIoTService().getTrens().enqueue(new Callback<List<Trem>>() {
             @Override
             public void onResponse(Call<List<Trem>> call, Response<List<Trem>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    // Procura o trem específico na lista
                     for (Trem t : response.body()) {
                         if (t.getId().equals(tremId)) {
-                            plotarNoMapa(t);
+                            atualizarTela(t);
                             break;
                         }
                     }
@@ -79,42 +67,36 @@ public class DetalhesTremActivity extends AppCompatActivity implements OnMapRead
             @Override
             public void onFailure(Call<List<Trem>> call, Throwable t) {}
         });
-
-        // Atualiza a cada 3s
-        handler.postDelayed(this::atualizarPosicao, 3000);
     }
 
-    private void plotarNoMapa(Trem t) {
-        LatLng pos = new LatLng(t.getLatitude(), t.getLongitude());
+    private void atualizarTela(Trem t) {
+        // 1. Atualiza Textos
+        String etaTexto = String.format("%02d:%02d", t.getEtaMinutos(), t.getEtaSegundos());
+        txtEta.setText(etaTexto);
+        txtVelocidade.setText(String.format("Velocidade: %.1f km/h", t.getVelocidade()));
 
-        // Limpa marcadores anteriores (exceto a estação se quiser lógica complexa, mas clear() limpa tudo)
-        mMap.clear();
-
-        // Recria Estação
-        mMap.addMarker(new MarkerOptions().position(DESTINO).title("Destino: Sto Amaro").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-
-        // Cria Marcador do Trem
-        mMap.addMarker(new MarkerOptions()
-                .position(pos)
-                .title(t.getId())
-                .snippet("Velocidade: " + t.getVelocidade() + " km/h"));
-
-        // Desenha Linha entre Trem e Estação
-        mMap.addPolyline(new PolylineOptions().add(pos, DESTINO).width(5).color(Color.GRAY));
-
-        // Move a camera
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 14));
-
-        // --- LÓGICA DE ESTIMATIVA (BACKEND 2.2) ---
+        // 2. Status do GPS (Item 2.2 do Backend)
         if (t.isEstimado()) {
-            txtAviso.setVisibility(View.VISIBLE);
+            txtStatusGps.setText("⚠️ Sinal GPS Perdido - Usando Estimativa");
+            txtStatusGps.setTextColor(Color.parseColor("#FF9800")); // Laranja
         } else {
-            txtAviso.setVisibility(View.GONE);
+            txtStatusGps.setText("● Sinal GPS Ativo");
+            txtStatusGps.setTextColor(Color.parseColor("#4CAF50")); // Verde
         }
 
-        // --- CÁLCULO DE ETA (BACKEND 2.1) ---
-        // O Backend já manda calculado!
-        String textoEta = String.format("Chegada em: %d min %d seg", t.getEtaMinutos(), t.getEtaSegundos());
-        txtEta.setText(textoEta);
+        // 3. Atualiza Barra de Progresso (Matemática simples para visualização)
+        float[] results = new float[1];
+        Location.distanceBetween(t.getLatitude(), t.getLongitude(), LAT_DESTINO, LON_DESTINO, results);
+        float distanciaRestante = results[0];
+
+        // Se faltam 2km de 10km totais, andamos 8km (80%)
+        float distanciaPercorrida = DISTANCIA_TOTAL_LINHA_METROS - distanciaRestante;
+        int progresso = (int) ((distanciaPercorrida / DISTANCIA_TOTAL_LINHA_METROS) * 100);
+
+        // Limita entre 0 e 100
+        if (progresso < 0) progresso = 0;
+        if (progresso > 100) progresso = 100;
+
+        progressBar.setProgress(progresso);
     }
 }

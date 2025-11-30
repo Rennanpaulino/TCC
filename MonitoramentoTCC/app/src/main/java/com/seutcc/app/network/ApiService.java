@@ -7,7 +7,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
-
+import retrofit2.http.Path;
 public interface ApiService {
     // Auth (Porta 8001)
     @POST("login")
@@ -26,4 +26,16 @@ public interface ApiService {
     // Report (Porta 8003)
     @GET("reports/stats")
     Call<Map<String, Integer>> getStats();
+
+    // 1. Busca todas as linhas
+    @GET("/linhas")
+    Call<List<Linha>> getLinhas();
+
+    // 2. Busca estações de uma linha específica
+    @GET("/estacoes/{linhaId}")
+    Call<List<Estacao>> getEstacoes(@Path("linhaId") String linhaId);
+
+    // 3. Busca a previsão para a estação selecionada
+    @GET("/previsao/{linhaId}/{estacaoId}")
+    Call<Previsao> getPrevisao(@Path("linhaId") String linhaId, @Path("estacaoId") String estacaoId);
 }

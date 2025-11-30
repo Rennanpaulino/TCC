@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.seutcc.app">
+    package="com.seutcc.app" >
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -11,25 +11,25 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MonitoramentoTCC"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true" >
+        <activity
+            android:name=".DetalhesEstacaoActivity"
+            android:exported="true" />
 
-        <meta-data
-            android:name="com.google.android.gms.geo.API_KEY"
-            android:value="@string/google_maps_key" />
+        <activity android:name=".EstacoesActivity" />
 
         <activity
             android:name=".RegisterActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".RelatoriosActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".DetalhesTremActivity"
-            android:exported="false" />
-
+            android:exported="true" />
         <activity
             android:name=".LoginActivity"
-            android:exported="true">
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -1,48 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#FAFAFA">
+
+    <TextView
+        android:id="@+id/txtTituloTrem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TREM-01"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:textColor="#333"/>
+
+    <TextView
+        android:id="@+id/txtStatusGps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sinal GPS: OK"
+        android:textSize="14sp"
+        android:textColor="#4CAF50"
+        android:layout_marginBottom="32dp"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:background="#FFFFFF">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Progresso até Santo Amaro"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_gravity="center"/>
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_launcher_foreground"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"/>
+            <ProgressBar
+                android:id="@+id/progressBarTrajeto"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:max="100"
+                android:progress="0"
+                android:progressTint="#2196F3"
+                android:layout_marginTop="8dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Origem"
+                    android:textSize="12sp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Destino"
+                    android:textStyle="bold"
+                    android:textSize="12sp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:background="#FFFFFF">
+        android:background="#E3F2FD"
+        android:padding="24dp"
+        android:gravity="center">
 
         <TextView
-            android:id="@+id/txtTituloTrem"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Trem ID"
-            android:textSize="22sp"
-            android:textStyle="bold"/>
+            android:text="PREVISÃO DE CHEGADA"
+            android:letterSpacing="0.1"
+            android:textSize="12sp"
+            android:textColor="#1565C0"/>
 
         <TextView
-            android:id="@+id/txtEta"
+            android:id="@+id/txtEtaGrande"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Estimativa: Calculando..."
-            android:textSize="16sp"
-            android:textColor="#0055FF"
-            android:layout_marginTop="8dp"/>
+            android:text="-- min"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:textColor="#0D47A1"/>
 
         <TextView
-            android:id="@+id/txtAvisoGps"
-            android:layout_width="match_parent"
+            android:id="@+id/txtVelocidade"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="⚠️ Sinal GPS instável. Localização estimada."
-            android:background="#FFEB3B"
-            android:padding="8dp"
-            android:visibility="gone"
+            android:text="Velocidade: -- km/h"
             android:layout_marginTop="8dp"/>
+
     </LinearLayout>
-
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
 </LinearLayout>
