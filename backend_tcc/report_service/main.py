@@ -9,7 +9,8 @@ class ReportModel(Base):
     __tablename__ = "reports"
     id = Column(Integer, primary_key=True)
     usuario = Column(String)
-    trem_id = Column(String)
+    linha_id = Column(String)   # <-- MUDOU: Agora guardamos a linha
+    estacao_id = Column(String) # <-- NOVO: Guardamos a estação
     tipo_problema = Column(String)
     data_criacao = Column(DateTime, default=datetime.now)
 
@@ -19,7 +20,8 @@ app = FastAPI(title="Report Service")
 
 class ReportInput(BaseModel):
     usuario: str
-    trem_id: str
+    linha_id: str
+    estacao_id: str
     tipo_problema: str
 
 # --- ROTA DE CRIAÇÃO ---
@@ -27,13 +29,14 @@ class ReportInput(BaseModel):
 def criar_report(report: ReportInput, db: Session = Depends(get_db)):
     novo = ReportModel(
         usuario=report.usuario,
-        trem_id=report.trem_id,
+        linha_id=report.linha_id,
+        estacao_id=report.estacao_id,
         tipo_problema=report.tipo_problema,
         data_criacao=datetime.now()
     )
     db.add(novo)
     db.commit()
-    return {"msg": "Registrado"}
+    return {"msg": "Reportado com sucesso"}
 
 # --- ROTA PARA O GRÁFICO (Estatísticas) ---
 @app.get("/reports/stats")
