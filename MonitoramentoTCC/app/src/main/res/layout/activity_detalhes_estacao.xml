@@ -1,52 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp"
     android:background="#E3F2FD">
 
-    <TextView
-        android:id="@+id/txtNomeEstacao"
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabReport"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Estação Santo Amaro"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="#0D47A1"/>
+        android:text="Reportar Problema"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#F44336"
+        app:icon="@android:drawable/stat_notify_error"
+        app:iconTint="#FFFFFF"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="24dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Próximo trem em:"
-        android:layout_marginTop="32dp"
-        android:textSize="18sp"/>
-
-    <TextView
-        android:id="@+id/txtTimer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="-- : --"
-        android:textSize="64sp"
-        android:textStyle="bold"
-        android:textColor="#333"/>
-
-    <ProgressBar
-        android:id="@+id/progressLoading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
-
-    <TextView
-        android:id="@+id/txtAvisoGPS"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="⚠️ Sinal GPS Estimado"
-        android:gravity="center"
-        android:background="#FFC107"
-        android:padding="8dp"
-        android:visibility="gone"
-        android:layout_marginTop="32dp"/>
+        android:layout_height="match_parent"
+        android:layout_above="@id/fabReport"
+        android:fillViewport="true">
 
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="24dp">
+
+            <TextView
+                android:id="@+id/txtNomeEstacao"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Estação"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="#0D47A1"
+                android:textAlignment="center"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Próximo trem em:"
+                android:layout_marginTop="40dp"
+                android:textSize="20sp"/>
+
+            <TextView
+                android:id="@+id/txtTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-- : --"
+                android:textSize="64sp"
+                android:textStyle="bold"
+                android:textColor="#333333"/>
+
+            <ProgressBar
+                android:id="@+id/loading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:id="@+id/txtAviso"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚠️ Sinal GPS Estimado"
+                android:gravity="center"
+                android:background="#FFC107"
+                android:padding="12dp"
+                android:layout_marginTop="32dp"
+                android:visibility="gone"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>

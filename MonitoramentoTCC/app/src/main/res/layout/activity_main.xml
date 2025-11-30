@@ -3,18 +3,38 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="#F5F5F5">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Selecione a Linha"
+        android:text="Monitoramento SP"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:textColor="#333"
+        android:layout_marginBottom="8dp"/>
+
+    <Button
+        android:id="@+id/btnDashboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📊 Ver Dashboard de Ocorrências"
+        android:backgroundTint="#673AB7"
+        android:textColor="#FFFFFF"
+        android:padding="12dp"
         android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Selecione a Linha:"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerLinhas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
 </LinearLayout>

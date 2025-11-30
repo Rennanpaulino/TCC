@@ -7,9 +7,9 @@ public class RetrofitClient {
     // IMPORTANTE: Mude para seu IP
 
     // --- OPÇÃO A: EMULADOR (Use esta se estiver no PC) ---
-    //private static final String BASE_URL = "http://10.0.2.2";
+    private static final String BASE_URL = "http://10.0.2.2";
     // --- OPÇÃO B: CELULAR FÍSICO (Use esta se conectar o cabo USB) ---
-    private static final String BASE_URL = "http://192.168.15.11";
+    //private static final String BASE_URL = "http://192.168.15.11";
 
     private static Retrofit getRetrofit(int port) {
         return new Retrofit.Builder()

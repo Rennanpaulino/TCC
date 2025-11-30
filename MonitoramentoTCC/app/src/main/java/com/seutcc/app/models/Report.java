@@ -1,15 +1,13 @@
 package com.seutcc.app.models;
+import com.google.gson.annotations.SerializedName;
 
 public class Report {
     private String usuario;
-    private String trem_id;
-    private String tipo_problema;
-    private String descricao;
+    @SerializedName("linha_id") private String linhaId;
+    @SerializedName("estacao_id") private String estacaoId;
+    @SerializedName("tipo_problema") private String tipoProblema;
 
-    public Report(String usuario, String trem_id, String tipo_problema, String descricao) {
-        this.usuario = usuario;
-        this.trem_id = trem_id;
-        this.tipo_problema = tipo_problema;
-        this.descricao = descricao;
+    public Report(String u, String l, String e, String t) {
+        this.usuario = u; this.linhaId = l; this.estacaoId = e; this.tipoProblema = t;
     }
 }

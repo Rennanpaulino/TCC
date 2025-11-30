@@ -19,6 +19,9 @@ public interface ApiService {
     @POST("register")
     Call<Map<String, String>> register(@Body UserLogin login);
 
+    @POST("/report") // A rota base já vem do RetrofitClient.getReportService()
+    Call<Void> enviarReport(@Body Report report);
+
     // IoT (Porta 8002)
     @GET("trens")
     Call<List<Trem>> getTrens();
