@@ -20,6 +20,9 @@ public class Previsao {
     @SerializedName("is_estimado")
     private boolean isEstimado;
 
+    @SerializedName("lotacao") // O nome exato que vem do Python
+    private int lotacao;
+
     @SerializedName("msg")
     private String mensagem;
 
@@ -29,4 +32,8 @@ public class Previsao {
     public int getSegundos() { return segundos; }
     public boolean isEstimado() { return isEstimado; }
     public String getMensagem() { return mensagem; }
+
+    public int getLotacao() {
+        return lotacao;
+    }
 }

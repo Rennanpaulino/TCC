@@ -1,5 +1,6 @@
 package com.seutcc.app;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,12 +9,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-// Imports para o Alerta e Botão
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import androidx.cardview.widget.CardView;
 
-// Imports do seu projeto
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.seutcc.app.models.Previsao;
 import com.seutcc.app.models.Report;
 import com.seutcc.app.network.RetrofitClient;
@@ -24,15 +24,21 @@ import retrofit2.Response;
 
 public class DetalhesEstacaoActivity extends AppCompatActivity {
 
-    // Componentes Visuais
-    private TextView txtTimer, txtAviso, txtNomeEstacao;
+    // Componentes de Texto e Loading
+    private TextView txtNomeEstacao, txtTimer, txtAviso;
     private ProgressBar loading;
+
+    // Componentes da Lotação
+    private TextView txtQtdPessoas, txtTituloLotacao;
+    private CardView cardLotacao;
+
+    // Botão de Ação
     private ExtendedFloatingActionButton fabReport;
 
-    // Dados da Estação
+    // Dados da Navegação
     private String linhaId, estacaoId, nomeEstacao;
 
-    // Controlador do Loop de Tempo
+    // Controlador do Loop
     private Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
@@ -40,37 +46,41 @@ public class DetalhesEstacaoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detalhes_estacao);
 
-        // 1. Recebe os dados da tela anterior
+        // 1. Receber dados da tela anterior
         linhaId = getIntent().getStringExtra("LINHA_ID");
         estacaoId = getIntent().getStringExtra("ESTACAO_ID");
         nomeEstacao = getIntent().getStringExtra("ESTACAO_NOME");
 
-        // 2. Conecta com o XML
+        // 2. Vincular componentes do XML (IDs)
         txtNomeEstacao = findViewById(R.id.txtNomeEstacao);
         txtTimer = findViewById(R.id.txtTimer);
-        txtAviso = findViewById(R.id.txtAviso); // Lembre que no XML o ID pode ser txtAviso ou txtAvisoGPS
-        loading = findViewById(R.id.loading); // Se no XML for progressLoading, ajuste aqui
+        loading = findViewById(R.id.loading);
+        txtAviso = findViewById(R.id.txtAviso);
         fabReport = findViewById(R.id.fabReport);
 
-        // Define o título
+        // IDs do Cartão de Lotação
+        cardLotacao = findViewById(R.id.cardLotacao);
+        txtTituloLotacao = findViewById(R.id.txtTituloLotacao);
+        txtQtdPessoas = findViewById(R.id.txtQtdPessoas);
+
+        // 3. Configuração Inicial
         txtNomeEstacao.setText(nomeEstacao);
 
-        // 3. Configura o Botão de Reportar
+        // Clique do Botão de Reportar
         fabReport.setOnClickListener(v -> mostrarDialogoReport());
 
-        // 4. Inicia o Loop de Previsão
+        // 4. Iniciar Loop
         iniciarLoop();
     }
 
-    // --- LÓGICA DE PREVISÃO (LOOP) ---
+    // --- LOOP DE ATUALIZAÇÃO ---
 
     private void iniciarLoop() {
         handler.post(new Runnable() {
             @Override
             public void run() {
                 buscarPrevisao();
-                // Agenda a próxima execução para daqui 5 segundos
-                handler.postDelayed(this, 5000);
+                handler.postDelayed(this, 5000); // Roda a cada 5 segundos
             }
         });
     }
@@ -79,46 +89,68 @@ public class DetalhesEstacaoActivity extends AppCompatActivity {
         RetrofitClient.getIoTService().getPrevisao(linhaId, estacaoId).enqueue(new Callback<Previsao>() {
             @Override
             public void onResponse(Call<Previsao> call, Response<Previsao> response) {
-                loading.setVisibility(View.GONE); // Esconde loading na primeira resposta
+                loading.setVisibility(View.GONE); // Esconde o loading girando
 
                 if (response.isSuccessful() && response.body() != null) {
                     Previsao p = response.body();
-
-                    // Verifica mensagens especiais (Ex: "Nenhum trem na linha")
-                    if (p.getMensagem() != null && p.getMensagem().contains("Nenhum trem")) {
-                        txtTimer.setText("S/ Trem");
-                        txtTimer.setTextSize(40); // Diminui fonte se o texto for grande
-                        return;
-                    }
-
-                    // Formata o Tempo (ex: 04 : 12)
-                    String tempo = String.format("%02d : %02d", p.getMinutos(), p.getSegundos());
-                    txtTimer.setText(tempo);
-                    txtTimer.setTextSize(70); // Volta ao tamanho normal
-
-                    // Aviso de GPS Estimado
-                    if (p.isEstimado()) {
-                        txtAviso.setVisibility(View.VISIBLE);
-                        txtAviso.setText("⚠️ Sinal GPS Instável (Estimado)");
-                    } else {
-                        txtAviso.setVisibility(View.GONE);
-                    }
+                    atualizarTela(p);
                 }
             }
 
             @Override
             public void onFailure(Call<Previsao> call, Throwable t) {
                 loading.setVisibility(View.GONE);
-                txtTimer.setText("-- : --");
-                // Não mostramos Toast aqui para não spammar o usuário a cada 5s se a net cair
             }
         });
     }
 
-    // --- LÓGICA DE REPORT (BOTÃO) ---
+    private void atualizarTela(Previsao p) {
+        // A. Atualiza Timer
+        if (p.getMensagem() != null && p.getMensagem().contains("Nenhum trem")) {
+            txtTimer.setText("S/ Trem");
+            txtTimer.setTextSize(40);
+        } else {
+            String tempo = String.format("%02d : %02d", p.getMinutos(), p.getSegundos());
+            txtTimer.setText(tempo);
+            txtTimer.setTextSize(64);
+        }
+
+        // B. Atualiza Aviso de GPS
+        if (p.isEstimado()) {
+            txtAviso.setVisibility(View.VISIBLE);
+            txtAviso.setText("⚠️ Sinal GPS Instável (Estimado)");
+        } else {
+            txtAviso.setVisibility(View.GONE);
+        }
+
+        // C. ATUALIZA CARTÃO DE LOTAÇÃO (Lógica Visual)
+        int qtd = p.getLotacao(); // O Backend precisa mandar esse campo "lotacao" no JSON de previsão
+        txtQtdPessoas.setText(qtd + " pessoas detectadas");
+
+        if (qtd < 10) {
+            // VERDE (Vazio)
+            cardLotacao.setCardBackgroundColor(Color.parseColor("#E8F5E9"));
+            txtTituloLotacao.setText("VAGÃO VAZIO");
+            txtTituloLotacao.setTextColor(Color.parseColor("#2E7D32"));
+            txtQtdPessoas.setTextColor(Color.parseColor("#2E7D32"));
+        } else if (qtd < 30) {
+            // LARANJA (Moderado)
+            cardLotacao.setCardBackgroundColor(Color.parseColor("#FFF3E0"));
+            txtTituloLotacao.setText("LOTAÇÃO MÉDIA");
+            txtTituloLotacao.setTextColor(Color.parseColor("#EF6C00"));
+            txtQtdPessoas.setTextColor(Color.parseColor("#EF6C00"));
+        } else {
+            // VERMELHO (Cheio)
+            cardLotacao.setCardBackgroundColor(Color.parseColor("#FFEBEE"));
+            txtTituloLotacao.setText("SUPERLOTADO");
+            txtTituloLotacao.setTextColor(Color.parseColor("#C62828"));
+            txtQtdPessoas.setTextColor(Color.parseColor("#C62828"));
+        }
+    }
+
+    // --- SISTEMA DE REPORT ---
 
     private void mostrarDialogoReport() {
-        // Lista de problemas para o usuário escolher
         String[] problemas = {
                 "Trem muito atrasado",
                 "Superlotação Extrema",
@@ -129,12 +161,10 @@ public class DetalhesEstacaoActivity extends AppCompatActivity {
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Qual o problema aqui?");
+        builder.setTitle("Qual o problema?");
 
         builder.setItems(problemas, (dialog, which) -> {
-            // "which" é o índice do item clicado (0, 1, 2...)
-            String problemaEscolhido = problemas[which];
-            enviarReportBackend(problemaEscolhido);
+            enviarReportBackend(problemas[which]);
         });
 
         builder.setNegativeButton("Cancelar", null);
@@ -142,32 +172,5 @@ public class DetalhesEstacaoActivity extends AppCompatActivity {
     }
 
     private void enviarReportBackend(String problema) {
-        // Cria o objeto Report
-        // Usuário fixo para TCC, mas poderia pegar do SessionManager
-        Report report = new Report("PassageiroApp", linhaId, estacaoId, problema);
-
-        // Chama o serviço de Report (Porta 8003)
-        RetrofitClient.getReportService().enviarReport(report).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(DetalhesEstacaoActivity.this, "Ocorrência registrada! Obrigado.", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(DetalhesEstacaoActivity.this, "Erro ao registrar: " + response.code(), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(DetalhesEstacaoActivity.this, "Falha ao enviar report.", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    // Boa prática: Parar o loop se o usuário sair da tela para economizar bateria
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        handler.removeCallbacksAndMessages(null); // Mata o loop
-    }
-}
+        // Cria o Report
+        Report report = new Report("Passageiro", linhaId, estacaoId, problema);}}

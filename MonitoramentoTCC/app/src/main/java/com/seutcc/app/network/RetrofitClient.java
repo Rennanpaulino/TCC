@@ -1,20 +1,31 @@
 package com.seutcc.app.network;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
-    // IMPORTANTE: Mude para seu IP
 
-    // --- OPÇÃO A: EMULADOR (Use esta se estiver no PC) ---
-    private static final String BASE_URL = "http://10.0.2.2";
-    // --- OPÇÃO B: CELULAR FÍSICO (Use esta se conectar o cabo USB) ---
-    //private static final String BASE_URL = "http://192.168.15.11";
-
+    // GARANTA QUE ESTÁ SEM A BARRA NO FINAL!
+    //private static final String BASE_URL = "http://10.0.2.2";
+    private static final String BASE_URL = "http://192.168.15.4";
     private static Retrofit getRetrofit(int port) {
+
+        // --- CONFIGURAÇÃO DO LOG ---
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        // Nível BODY mostra o JSON inteiro que vai e volta
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(logging)
+                .build();
+        // ---------------------------
+
         return new Retrofit.Builder()
                 .baseUrl(BASE_URL + ":" + port + "/")
                 .addConverterFactory(GsonConverterFactory.create())
+                .client(client) // Adiciona o cliente com log
                 .build();
     }
 

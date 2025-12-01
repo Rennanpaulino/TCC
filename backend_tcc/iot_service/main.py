@@ -226,7 +226,7 @@ def calcular_previsao(linha_id: str, estacao_id: str, db: Session = Depends(get_
         "estacao_destino": estacao_alvo["nome"],
         "trem_id": melhor_trem.trem_id,
         "distancia_km": round(distancia_final, 2),
-        "eta_minutos": minutes,
+        "eta_minutos": minutos,
         "eta_segundos": segundos,
         "lotacao": melhor_trem.lotacao,
         "velocidade_ref": trem_escolhido_vel,
